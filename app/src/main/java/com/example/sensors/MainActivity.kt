@@ -1,47 +1,67 @@
 package com.example.sensors
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.sensors.ui.theme.SensorsTheme
+import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        // Step 1: Get SensorManager
+        val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+        // Step 2: Get all sensors
+        val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+
+        // Step 3: Set Compose UI
         setContent {
-            SensorsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+            SensorApp(sensorList)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SensorApp(sensors: List<Sensor>) {
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("Sensor Explorer") })
+        }
+    ) { paddingValues ->
+
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            items(sensors) { sensor ->
+                SensorItem(sensor)
+                Divider()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun SensorItem(sensor: Sensor) {
     Text(
-        text = "Hello $name!",
-        modifier = modifier
+        text = """
+            Name: ${sensor.name}
+            Type: ${sensor.type}
+            Vendor: ${sensor.vendor}
+            Version: ${sensor.version}
+            Max Range: ${sensor.maximumRange}
+            Resolution: ${sensor.resolution}
+            Power: ${sensor.power} mA
+        """.trimIndent(),
+        modifier = Modifier.padding(16.dp)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SensorsTheme {
-        Greeting("Android")
-    }
 }
